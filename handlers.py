@@ -1,10 +1,36 @@
-# handlers.py
+__all__ = [
+    "get_contact_keyboard",
+    "get_wall_keyboard",
+    "get_window_keyboard",
+    "get_door_keyboard",
+    "get_panel_type_keyboard",
+    "get_panel_combination_keyboard",
+    "get_yes_no_keyboard",
+    "get_cost_or_extras_keyboard",
+    "wall_height",
+    "wall_width",
+    "add_wall",
+    "ask_windows",
+    "window_height",
+    "window_width",
+    "add_window",
+    "ask_doors",
+    "door_height",
+    "door_width",
+    "add_door",
+    "panel_type",
+    "panel_combination",
+    "ask_cost_or_extras",
+]
+
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
 from calculations import calculate_panels
 from dobor import calculate_all_dobor_elements, ask_for_corner_details, dobor_callback
 from keyboards import *
 
+
+# Функция для обработки высоты стены
 async def wall_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         height = float(update.message.text)
@@ -21,6 +47,7 @@ async def wall_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return WALL_HEIGHT
 
+# Функция для обработки ширины стены
 async def wall_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         width = float(update.message.text)
@@ -38,6 +65,7 @@ async def wall_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return WALL_WIDTH
 
+# Функция для обработки выбора добавления еще стены или перехода к проемам
 async def add_wall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
 
@@ -49,6 +77,7 @@ async def add_wall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Желаете добавить окна?", reply_markup=get_yes_no_keyboard())
         return ASK_WINDOWS
 
+# Функция для обработки запроса о добавлении окон
 async def ask_windows(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == "Да":
@@ -58,6 +87,7 @@ async def ask_windows(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.message.reply_text("Переходим к дверям. Желаете добавить двери?", reply_markup=get_yes_no_keyboard())
         return ASK_DOORS
 
+# Функция для обработки высоты окна
 async def window_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         height = float(update.message.text)
@@ -74,6 +104,7 @@ async def window_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return WINDOW_HEIGHT
 
+# Функция для обработки ширины окна
 async def window_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         width = float(update.message.text)
@@ -91,6 +122,7 @@ async def window_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return WALL_WIDTH
 
+# Функция для обработки выбора добавления еще окна или перехода к дверям
 async def add_window(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == "Добавить еще окно":
@@ -101,6 +133,7 @@ async def add_window(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
          await update.message.reply_text("Переходим к дверям. Желаете добавить двери?", reply_markup=get_yes_no_keyboard())
          return ASK_DOORS
 
+# Функция для обработки запроса о добавлении дверей
 async def ask_doors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == "Да":
@@ -111,6 +144,7 @@ async def ask_doors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Выбери тип панели:", reply_markup=get_panel_type_keyboard())
         return PANEL_TYPE
 
+# Функция для обработки высоты двери
 async def door_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         height = float(update.message.text)
@@ -127,6 +161,7 @@ async def door_height(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return DOOR_HEIGHT
 
+# Функция для обработки ширины двери
 async def door_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     try:
         width = float(update.message.text)
@@ -136,7 +171,7 @@ async def door_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         if width > 3:
             await update.message.reply_text("Ширина двери кажется слишком большой. Пожалуйста, проверьте введенное значение и попробуйте снова:")
             return DOOR_WIDTH
-        context.user_data['current_door']['width'] = width
+        context.user_data['current_door'] = {'height': height}
         context.user_data['doors'].append(context.user_data['current_door'])
         await update.message.reply_text("Дверь добавлена. Что дальше?", reply_markup=get_door_keyboard())
         return ADD_DOOR
@@ -144,6 +179,7 @@ async def door_width(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Пожалуйста, введи число. Попробуй снова:")
         return DOOR_WIDTH
 
+# Функция для обработки выбора добавления еще двери или перехода к расчету
 async def add_door(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     if text == "Добавить еще дверь":
@@ -154,19 +190,20 @@ async def add_door(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Выбери тип панели:", reply_markup=get_panel_type_keyboard())
         return PANEL_TYPE
 
+# Функция для обработки выбора типа панели
 async def panel_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
      text = update.message.text
      context.user_data['panel_type'] = text
      await update.message.reply_text("Выбери комбинацию панелей:", reply_markup=get_panel_combination_keyboard())
      return PANEL_COMBINATION
 
+# Функция для обработки выбора комбинации панелей
 async def panel_combination(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     text = update.message.text
     context.user_data['combination'] = text
     
     panels_needed = calculate_panels(
         context.user_data['walls'],
-        context.user_data['windows'],
         context.user_data['doors'],
         context.user_data['combination']
     )
@@ -191,20 +228,6 @@ async def ask_cost_or_extras(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await update.message.reply_text("В разработке...", reply_markup=ReplyKeyboardMarkup([[]], resize_keyboard=True, one_time_keyboard=True))
         return CALCULATE_COST # Переходим к состоянию расчета стоимости
     elif text == "Добавить доборные элементы":
-        # Автоматический расчет доборных элементов
-        # dobor_elements = await calculate_all_dobor_elements(context)
-
-        # if dobor_elements:
-        #     message = "Необходимые доборные элементы:\n"
-        #     for element, value in dobor_elements.items():
-        #         message += f"- {element}: {value}\n"
-        #     await update.message.reply_text(message)
-        # else:
-        #     await update.message.reply_text("Не удалось рассчитать доборные элементы.")
-
-        # TODO: Определите, к какому состоянию нужно перейти после вывода доборных элементов
-        # return ConversationHandler.END  # Завершаем разговор
-        
         return await ask_for_corner_details(update, context, CHOOSE_DOBOR_EXECUTION)
     else:
         await update.message.reply_text("Пожалуйста, выберите один из вариантов.")
