@@ -89,14 +89,14 @@ async def calculate_volume_openings(context: ContextTypes.DEFAULT_TYPE) -> dict:
         dobor_elements["Откосы"] = f"{side_otkos_needed + top_otkos_needed } шт."
     return dobor_elements
 
-async def ask_for_corner_details(update: Update, context: ContextTypes.DEFAULT_TYPE, choose_dobor_execution) -> int:
+async def ask_for_corner_details(update: Update, context: ContextTypes.DEFAULT_TYPE, CHOOSE_DOBOR_EXECUTION) -> int:
      await update.callback_query.message.reply_text(
         "Выберите исполнение для углов:",
         reply_markup=get_dobor_execution_keyboard(),
     )
-     return choose_dobor_execution
+     return CHOOSE_DOBOR_EXECUTION
 
-async def dobor_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, choose_dobor_execution, choose_corner_size, choose_opening_depth, choose_frame_width,enter_corner_quantity,enter_corner_height,enter_quantity, enter_length ) -> int:
+async def dobor_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
 
@@ -109,12 +109,12 @@ async def dobor_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, cho
         #     return CHOOSE_CORNER_SIZE
         # else:
         await query.edit_message_text(text=f"Вы выбрали исполнение '{execution}'.", reply_markup=get_opening_depth_keyboard())
-        return choose_opening_depth
+        return CHOOSE_OPENING_DEPTH
     if data.startswith("depth:"):
        depth = int(data[len("depth:"):])
        context.user_data['opening_depth'] = depth
        await query.edit_message_text(text="Выберите ширину рамки (мм):", reply_markup=get_frame_width_keyboard())
-       return choose_frame_width
+       return CHOOSE_FRAME_WIDTH
     elif data.startswith("width:"):
          width = int(data[len("width:"):])
          context.user_data['frame_width'] = width
@@ -123,7 +123,7 @@ async def dobor_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, cho
          elif  context.user_data['dobor_execution'] == "Объемные":
              dobor_elements = await calculate_volume_otkosi_otlivi(context)
          message = "Необходимые доборные элементы:\n"
-         for element, value in dobor_elements.items(): # Выводим информацию об остальных элементах
+         for element, value in dobor_elements.items(): # Выводим информацию об остальных элементов
            message += f"- {element}: {value}\n"
          await query.edit_message_text(text=message)
          return ConversationHandler.END
